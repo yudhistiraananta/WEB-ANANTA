@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#6257e8">
+<title>DompetAnanta — Budget Mingguan</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#171923;--muted:#7b7f8c;--line:#e9eaf0;--purple:#6257e8;--green:#15936a;--red:#dc5366;--orange:#ef9b38;--blue:#4c86e8;--shadow:0 10px 28px rgba(36,39,70,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}.app{max-width:1080px;margin:auto;padding:26px 18px 48px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.logo{font-size:25px;font-weight:850}.logo b{color:var(--purple)}.sub{font-size:13px;color:var(--muted);margin-top:3px}.week{font-size:13px;color:var(--muted);background:#fff;border:1px solid var(--line);padding:10px 13px;border-radius:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow);padding:20px}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-bottom:16px}.balance{font-size:35px;font-weight:850;margin:7px 0}.hero small{color:var(--muted)}.progress{height:9px;background:#eeeef5;border-radius:99px;overflow:hidden;margin-top:15px}.progress span{display:block;height:100%;background:var(--purple);width:0%;transition:.3s}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{padding:15px;border-radius:14px;background:#fafafe}.mini .label{font-size:12px;color:var(--muted)}.mini strong{display:block;font-size:18px;margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}
+h2{font-size:17px;margin:0 0 15px}.section{margin-top:16px}.alloc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.bucket{position:relative;overflow:hidden}.bucket .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.bucket .emoji{font-size:23px}.bucket h3{font-size:14px;margin:8px 0 2px}.pct{font-size:12px;color:var(--muted)}.budget{font-size:20px;font-weight:800;margin:10px 0 2px}.remaining{font-size:12px;color:var(--muted)}.bar{height:7px;background:#f0f0f5;border-radius:99px;margin-top:12px;overflow:hidden}.bar i{display:block;height:100%;width:0%;transition:.3s}.food .bar i{background:var(--green)}.data .bar i{background:var(--blue)}.fun .bar i{background:var(--orange)}.save .bar i{background:var(--purple)}
+.main{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form{display:grid;gap:10px}.form label{font-size:12px;font-weight:700;color:#656977}.form input,.form select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fafbfe;outline:none}.type{display:grid;grid-template-columns:1fr 1fr;gap:8px}.type button{padding:11px;border:0;border-radius:11px;background:#f0f1f5;color:#666;font-weight:750}.type button.active.in{background:#e7f7f0;color:var(--green)}.type button.active.out{background:#fdecef;color:var(--red)}button.primary{border:0;background:var(--purple);color:#fff;padding:12px;border-radius:11px;font-weight:800;cursor:pointer}
+.tx{display:flex;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}.tx:last-child{border-bottom:0}.txname{font-weight:700;font-size:14px}.meta{font-size:11px;color:var(--muted);margin-top:3px}.txamt{font-size:13px;font-weight:800}.delete{border:0;background:none;color:#a7a9b3;cursor:pointer}.empty{text-align:center;color:var(--muted);padding:28px 5px;font-size:13px}.note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}
+.settings{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.settings button{border:1px solid var(--line);background:#fafbfe;padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer}.footer{text-align:center;color:var(--muted);font-size:11px;margin-top:22px}
+
+.nav{display:flex;gap:8px;margin:0 0 16px}.nav button{border:1px solid var(--line);background:#fff;color:#666;padding:10px 15px;border-radius:11px;font-weight:800;cursor:pointer}.nav button.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.page{display:none}.page.active{display:block}
+.saving-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.saving-total{font-size:32px;font-weight:850;margin:8px 0}.saving-actions{display:grid;gap:10px}.saving-item{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.saving-item:last-child{border-bottom:0}
+.help{font-size:12px;color:var(--muted);line-height:1.5}
+/* Tampilan desktop */
+@media(max-width:820px){
+  .hero,.main,.saving-grid{grid-template-columns:1fr}
+  .alloc{grid-template-columns:1fr 1fr}
+}
+
+/* Tampilan HP */
+@media(max-width:600px){
+  body{
+    font-size:14px;
+    -webkit-text-size-adjust:100%;
+    overflow-x:hidden;
+  }
+  .app{
+    width:100%;
+    max-width:none;
+    padding:14px 10px 32px;
+  }
+  header{
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .logo{font-size:21px}
+  .sub{font-size:11px;line-height:1.35}
+  .week{
+    font-size:11px;
+    padding:8px 9px;
+    white-space:nowrap;
+  }
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:var(--bg);
+    padding:4px 0 10px;
+    margin-bottom:10px;
+  }
+  .nav button{
+    flex:1;
+    min-height:44px;
+    padding:10px 8px;
+    font-size:13px;
+    touch-action:manipulation;
+  }
+  .card{
+    border-radius:15px;
+    padding:15px;
+  }
+  .hero{
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .balance{font-size:28px}
+  .stats{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .mini{padding:12px 10px}
+  .mini .label{font-size:11px}
+  .mini strong{font-size:16px}
+  .section{margin-top:10px}
+  h2{font-size:16px;margin-bottom:12px}
+  .settings{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .settings button{
+    width:100%;
+    min-height:44px;
+    touch-action:manipulation;
+  }
+  .alloc{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .bucket{
+    padding:12px;
+  }
+  .bucket .emoji{font-size:20px}
+  .bucket h3{font-size:12px;line-height:1.25}
+  .budget{font-size:16px}
+  .remaining{font-size:11px}
+  .bar{margin-top:9px}
+  .main{gap:10px}
+  .form input,.form select{
+    min-height:46px;
+    font-size:16px; /* mencegah iPhone melakukan zoom saat input */
+    padding:11px 12px;
+  }
+  .type button{
+    min-height:46px;
+    font-size:13px;
+    touch-action:manipulation;
+  }
+  button.primary,
+  .saving-actions button{
+    min-height:46px;
+    font-size:14px;
+    touch-action:manipulation;
+  }
+  .tx{
+    align-items:center;
+    padding:12px 0;
+  }
+  .txname{font-size:13px}
+  .txamt{font-size:12px;white-space:nowrap}
+  .delete{
+    font-size:20px;
+    padding:5px 7px;
+    min-width:34px;
+    min-height:34px;
+  }
+  .saving-grid{gap:10px}
+  .saving-total{font-size:28px}
+  .saving-item{
+    align-items:center;
+    padding:12px 0;
+  }
+  .help,.note{font-size:11px}
+  .footer{font-size:10px}
+}
+
+/* HP sangat kecil */
+@media(max-width:380px){
+  .app{padding-left:8px;padding-right:8px}
+  .alloc{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .week{font-size:10px}
+}
+</style>
+</head>
+<body style="padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);">
+<div class="app">
+<header><div><div class="logo">Dompet<b>Ananta</b></div><div class="sub">Budget mingguan yang langsung terbagi otomatis.</div></div><div class="week" id="weekLabel"></div></header>
+<nav class="nav">
+  <button id="dashTab" class="active" onclick="showPage('dashboard')">🏠 Dashboard</button>
+  <button id="saveTab" onclick="showPage('savings')">💰 Tabungan</button>
+</nav>
+
+<div id="dashboardPage" class="page active"><section class="hero">
+<div class="card">
+  <small>Uang yang masih tersedia minggu ini</small>
+  <div class="balance" id="balance">Rp0</div>
+  <small id="incomeInfo">Belum ada pemasukan minggu ini.</small>
+  <div class="progress"><span id="overallProgress"></span></div>
+</div>
+<div class="card stats">
+  <div class="mini"><div class="label">Pemasukan minggu ini</div><strong class="green" id="income">Rp0</strong></div>
+  <div class="mini"><div class="label">Sudah terpakai</div><strong class="red" id="spent">Rp0</strong></div>
+  <div class="mini"><div class="label">Tabungan</div><strong id="saved">Rp0</strong></div>
+  <div class="mini"><div class="label">Transaksi</div><strong id="count">0</strong></div>
+</div>
+</section>
+
+<section class="card section">
+<div class="settings"><h2>Pembagian uang minggu ini</h2><button onclick="setWeeklyIncome()">Atur pemasukan</button></div>
+<div class="alloc">
+  <div class="bucket card food"><div class="top"><span class="emoji">🍽️</span><span class="pct">50%</span></div><h3>Makan & Minum</h3><div class="budget" id="foodBudget">Rp0</div><div class="remaining" id="foodRemain">Tersisa Rp0</div><div class="bar"><i id="foodBar"></i></div></div>
+  <div class="bucket card data"><div class="top"><span class="emoji">⛽</span><span class="pct">20%</span></div><h3>Bensin & Paket Data</h3><div class="budget" id="dataBudget">Rp0</div><div class="remaining" id="dataRemain">Tersisa Rp0</div><div class="bar"><i id="dataBar"></i></div></div>
+  <div class="bucket card fun"><div class="top"><span class="emoji">☕</span><span class="pct">10%</span></div><h3>Jajan & Nongkrong</h3><div class="budget" id="funBudget">Rp0</div><div class="remaining" id="funRemain">Tersisa Rp0</div><div class="bar"><i id="funBar"></i></div></div>
+  <div class="bucket card save"><div class="top"><span class="emoji">💰</span><span class="pct">20%</span></div><h3>Tabungan</h3><div class="budget" id="saveBudget">Rp0</div><div class="remaining" id="saveRemain">Tersisa Rp0</div><div class="bar"><i id="saveBar"></i></div></div>
+</div>
+<div class="note">Setiap kali kamu memasukkan pemasukan mingguan, uang otomatis dibagi 50% / 20% / 10% / 20%. Pengeluaran akan mengurangi saldo kategori yang sesuai.</div>
+</section>
+
+<div class="main section">
+<section class="card"><h2>Tambah transaksi</h2>
+<form class="form" onsubmit="addTx(event)">
+<div class="type"><button type="button" id="inBtn" class="active in" onclick="setType('income')">＋ Pemasukan</button><button type="button" id="outBtn" onclick="setType('expense')">− Pengeluaran</button></div>
+<label>Nominal</label><input id="amount" type="number" min="1" placeholder="Contoh: 50000" required>
+<label>Keterangan</label><input id="desc" maxlength="60" placeholder="Contoh: Makan siang" required>
+<label>Kategori</label><select id="category"><option value="weekly">💵 Uang Mingguan</option><option value="food">🍽️ Makan & Minum</option><option value="data">⛽ Bensin & Paket Data</option><option value="fun">☕ Jajan & Nongkrong</option><option value="save">💰 Tabungan</option></select>
+<label>Tanggal</label><input id="date" type="date" required>
+<button class="primary">Simpan transaksi</button>
+</form></section>
+
+<section class="card"><h2>Transaksi minggu ini</h2><div id="list"></div></section>
+</div>
+</div>
+<div id="savingsPage" class="page">
+  <div class="saving-grid">
+    <section class="card">
+      <h2>Tabungan</h2>
+      <div class="help">Tabungan dipisahkan dari halaman utama. Setiap minggu, 20% dari pemasukan dialokasikan ke tabungan.</div>
+      <div class="saving-total" id="savingPageTotal">Rp0</div>
+      <div class="help" id="savingPageInfo">Belum ada alokasi tabungan.</div>
+      <div class="progress"><span id="savingProgress"></span></div>
+    </section>
+    <section class="card">
+      <h2>Tambah transaksi tabungan</h2>
+      <div class="saving-actions">
+        <button class="primary" type="button" onclick="addSavingDeposit()">＋ Tambah uang ke tabungan</button>
+        <button type="button" onclick="addSavingWithdrawal()" style="border:1px solid var(--line);background:#fafbfe;padding:12px;border-radius:11px;font-weight:800;cursor:pointer">− Ambil dari tabungan</button>
+      </div>
+      <div class="help" style="margin-top:12px">Gunakan halaman ini untuk uang yang benar-benar kamu simpan atau ambil kembali.</div>
+    </section>
+  </div>
+  <section class="card section">
+    <h2>Riwayat tabungan</h2>
+    <div id="savingList"></div>
+  </section>
+</div>
+<div class="footer">DompetKu • Data tersimpan di browser perangkat ini</div>
+</div>
+
+<script>
+const KEY='dompetku_weekly_v2';
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{weeklyIncome:500000,weeklyIncomeDate:new Date().toISOString().slice(0,10),txs:[],savings:[]};
+if(!state.weeklyIncomeDate)state.weeklyIncomeDate=new Date().toISOString().slice(0,10);
+if(!state.savings)state.savings=[];
+let currentType='income';
+const P={food:.5,data:.2,fun:.1,save:.2};
+const names={weekly:'Uang Mingguan',food:'Makan & Minum',data:'Bensin & Paket Data',fun:'Jajan & Nongkrong',save:'Tabungan'};
+const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n);
+const monday=d=>{let x=new Date(d);let day=x.getDay()||7;x.setDate(x.getDate()-day+1);x.setHours(0,0,0,0);return x};
+const weekStart=()=>monday(new Date());
+const sameWeek=d=>monday(new Date(d)).getTime()===weekStart().getTime();
+const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+
+function setWeeklyIncome(){
+ let v=prompt('Berapa pemasukan utama minggu ini?',state.weeklyIncome);
+ if(v===null||isNaN(v)||Number(v)<0)return;
+ let date=prompt('Tanggal pemasukan (YYYY-MM-DD):',new Date().toISOString().slice(0,10));
+ if(date===null||!/^(\\d{4})-(\\d{2})-(\\d{2})$/.test(date))return;
+ state.weeklyIncome=Number(v);
+ state.weeklyIncomeDate=date;
+ save();render();
+}
+function setType(t){
+ currentType=t;
+ inBtn.className=t==='income'?'active in':'';
+ outBtn.className=t==='expense'?'active out':'';
+ Array.from(category.options).forEach(o=>{
+   o.hidden = t==='income' ? o.value!=='weekly' : o.value==='weekly';
+ });
+ category.value = t==='income' ? 'weekly' : 'food';
+}
+setType('income');
+function addTx(e){
+ e.preventDefault();
+ const amt=Number(amount.value);
+ const descText=desc.value.trim();
+ const txDate=date.value;
+ if(!amt||amt<1||!descText||!txDate){alert('Lengkapi nominal, keterangan, dan tanggal.');return}
+ if(currentType==='expense' && amt>availableFor(category.value)){alert('Pengeluaran ini melebihi sisa budget kategori.');return}
+ state.txs.unshift({id:Date.now(),type:currentType,amount:amt,desc:descText,category:category.value,date:txDate});
+ if(currentType==='income') state.weeklyIncome+=amt;
+ save();e.target.reset();date.value=new Date().toISOString().slice(0,10);setType('income');render();
+}
+function availableFor(cat){
+ const budget=state.weeklyIncome*P[cat];
+ const used=state.txs.filter(x=>sameWeek(x.date)&&x.type==='expense'&&x.category===cat).reduce((a,x)=>a+x.amount,0);
+ return Math.max(0,budget-used);
+}
+function removeTx(id){
+ const x=state.txs.find(t=>t.id===id);if(!x)return;
+ if(x.type==='income'){state.weeklyIncome=Math.max(0,state.weeklyIncome-x.amount)}
+ state.txs=state.txs.filter(t=>t.id!==id);save();render();
+}
+
+function showPage(page){
+  const dashboard=page==='dashboard';
+  document.getElementById('dashboardPage').classList.toggle('active',dashboard);
+  document.getElementById('savingsPage').classList.toggle('active',!dashboard);
+  document.getElementById('dashTab').classList.toggle('active',dashboard);
+  document.getElementById('saveTab').classList.toggle('active',!dashboard);
+  if(!dashboard)renderSavings();
+}
+function addSavingDeposit(){
+  const v=prompt('Berapa uang yang ingin ditambahkan ke tabungan?','50000');
+  if(v===null||isNaN(v)||Number(v)<=0)return;
+  const desc=prompt('Keterangan:','Menabung');
+  if(desc===null)return;
+  state.savings.unshift({id:Date.now(),type:'deposit',amount:Number(v),desc:desc.trim()||'Menabung',date:new Date().toISOString().slice(0,10)});
+  save();render();renderSavings();
+}
+function addSavingWithdrawal(){
+  const total=savingTotal();
+  const v=prompt(`Saldo tabungan saat ini ${rupiah(total)}. Berapa yang ingin diambil?`,'50000');
+  if(v===null||isNaN(v)||Number(v)<=0)return;
+  if(Number(v)>total){alert('Jumlah yang diambil melebihi saldo tabungan.');return}
+  const desc=prompt('Keterangan:','Diambil dari tabungan');
+  if(desc===null)return;
+  state.savings.unshift({id:Date.now(),type:'withdrawal',amount:Number(v),desc:desc.trim()||'Diambil dari tabungan',date:new Date().toISOString().slice(0,10)});
+  save();render();renderSavings();
+}
+function savingTotal(){
+  return state.savings.reduce((sum,x)=>sum+(x.type==='deposit'?x.amount:-x.amount),0);
+}
+function renderSavings(){
+  const total=Math.max(0,savingTotal());
+  document.getElementById('savingPageTotal').textContent=rupiah(total);
+  const allocated=state.weeklyIncome*P.save;
+  document.getElementById('savingPageInfo').textContent=`Alokasi tabungan minggu ini: ${rupiah(allocated)} • Saldo tabungan manual: ${rupiah(total)}`;
+  document.getElementById('savingProgress').style.width=(allocated?Math.min(100,total/allocated*100):0)+'%';
+  const list=document.getElementById('savingList');
+  list.innerHTML=state.savings.length?state.savings.map(x=>`<div class="saving-item"><div><div class="txname">${x.type==='deposit'?'＋':'−'} ${escapeHtml(x.desc)}</div><div class="meta">${new Date(x.date+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</div></div><div><span class="txamt ${x.type==='deposit'?'green':'red'}">${x.type==='deposit'?'+':'-'} ${rupiah(x.amount)}</span> <button class="delete" onclick="removeSaving(${x.id})">×</button></div></div>`).join(''):'<div class="empty">Belum ada riwayat tabungan.</div>';
+}
+function removeSaving(id){
+  state.savings=state.savings.filter(x=>x.id!==id);
+  save();render();renderSavings();
+}
+
+function render(){
+ const weekTx=state.txs.filter(x=>sameWeek(x.date));
+ const income=state.weeklyIncome;
+ const expenses=weekTx.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);
+ const savings=income*P.save;
+ document.getElementById('balance').textContent=rupiah(Math.max(0,income-expenses));
+ document.getElementById('income').textContent=rupiah(income);
+ document.getElementById('spent').textContent=rupiah(expenses);
+ document.getElementById('saved').textContent=rupiah(savings);
+ document.getElementById('count').textContent=weekTx.length;
+ document.getElementById('incomeInfo').textContent=income?`Rp${income.toLocaleString('id-ID')} dibagi otomatis ke 4 pos • pemasukan utama ${new Date((state.weeklyIncomeDate||new Date().toISOString().slice(0,10))+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short'})}.`:'Belum ada pemasukan minggu ini.';
+ document.getElementById('overallProgress').style.width=Math.min(100,income?expenses/income*100:0)+'%';
+ ['food','data','fun','save'].forEach(cat=>{
+   const budget=income*P[cat];
+   const used=weekTx.filter(x=>x.type==='expense'&&x.category===cat).reduce((a,x)=>a+x.amount,0);
+   const remaining=Math.max(0,budget-used);
+   document.getElementById(cat+'Budget').textContent=rupiah(budget);
+   document.getElementById(cat+'Remain').textContent='Tersisa '+rupiah(remaining);
+   document.getElementById(cat+'Bar').style.width=Math.min(100,budget?used/budget*100:0)+'%';
+ });
+ document.getElementById('list').innerHTML=weekTx.length?weekTx.map(x=>`<div class="tx"><div><div class="txname">${x.type==='income'?'💵 ':' '}${escapeHtml(x.desc)}</div><div class="meta">${names[x.category]} • ${new Date(x.date+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short'})}</div></div><div><span class="txamt ${x.type==='income'?'green':'red'}">${x.type==='income'?'+':'-'} ${rupiah(x.amount)}</span><button class="delete" onclick="removeTx(${x.id})">×</button></div></div>`).join(''):'<div class="empty">Belum ada transaksi minggu ini.</div>';
+ const d=weekStart();const end=new Date(d);end.setDate(d.getDate()+6);
+ weekLabel.textContent=`${d.toLocaleDateString('id-ID',{day:'numeric',month:'short'})} – ${end.toLocaleDateString('id-ID',{day:'numeric',month:'short'})}`;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+render();
+renderSavings();
+</script>
+</body>
+</html>
